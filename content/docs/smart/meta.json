@@ -2,5 +2,6 @@
   "title": "Smart Module",
   "description": "The core of the Smart ecosystem",
   "icon": "Bolt",
-  "root": true
+  "root": true,
+  "pages": ["index", "manager", "metadata", "terminology", "todo"]
 }

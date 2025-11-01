@@ -13,3 +13,19 @@
   .animation-delay-2000 { animation-delay: 2000ms; }
   .animation-delay-4000 { animation-delay: 4000ms; }
 }
+
+@font-face {
+  font-family: 'Mono';
+  src: url('/JetBrainsMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Mono';
+  src: url('/JetBrainsMono-Bold.ttf') format('truetype');
+  font-weight: 600;
+}
+
+h1, h2, h3, h4, h5, h6, .font-bold.text-lg, .mono {
+  font-family: 'Mono', monospace;
+}

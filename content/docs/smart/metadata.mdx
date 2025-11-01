@@ -3,6 +3,7 @@ title: Metadata
 description: List of all available metadata keys in Smart.
 icon: FolderSearch
 ---
+
 import { Code, File } from 'lucide-react';
 
 ## Smart Metadata Keys
@@ -19,11 +20,11 @@ The default ruty metadata string looks like this:
   <TabsList>
     <TabsTrigger value="yaml">
       <File />
-      yaml
+      YAML
     </TabsTrigger>
     <TabsTrigger value="json">
       <Code />
-      json
+      JSON
     </TabsTrigger>
   </TabsList>
   <TabsContent value="yaml">
@@ -33,7 +34,10 @@ The default ruty metadata string looks like this:
   </TabsContent>
     <TabsContent value="json">
     ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    {
+      "softCap": 30,
+      "hardCap": 40,
+    }
     ```
     </TabsContent>
 </Tabs>
@@ -44,11 +48,11 @@ To set a metadata key for a family, you can write it in json and then add it to 
   <TabsList>
     <TabsTrigger value="yaml">
       <File />
-      yaml
+      YAML
     </TabsTrigger>
     <TabsTrigger value="json">
       <Code />
-      json
+      JSON
     </TabsTrigger>
   </TabsList>
   <TabsContent value="yaml">
@@ -58,7 +62,62 @@ To set a metadata key for a family, you can write it in json and then add it to 
   </TabsContent>
     <TabsContent value="json">
     ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    {
+      "softCap": 30,
+      "hardCap": 40,
+      "smart": {
+        "memory": 2048
+      }
+    }
+    ```
+    </TabsContent>
+</Tabs>
+
+## Providers Metadata Keys
+
+Providers may also use metadata keys to store and retrieve information related to their own configuration. 
+These keys are specific to each provider and are documented in the provider's documentation.
+They are usually store in an object with the provider id as key inside the `smart` field.
+
+Here is an example with the pterodactyl provider:
+
+<Tabs defaultValue="yaml">
+  <TabsList>
+    <TabsTrigger value="yaml">
+      <File />
+      YAML
+    </TabsTrigger>
+    <TabsTrigger value="json">
+      <Code />
+      JSON
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="yaml">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048, \"pterodactyl\": {\"disk\": 10240, \"cpu\": 100, \"swap\": 512, \"io\": 500, \"databases\": 2, \"allocations\": 1, \"backups\": 1, \"egg\": 123, \"user\": 456, \"allocation_default\": 789}}}"
+    ``` 
+  </TabsContent>
+    <TabsContent value="json">
+    ```yml
+    {
+      "softCap": 30,
+      "hardCap": 40,
+      "smart": {
+        "memory": 2048,
+        "pterodactyl": {
+          "disk": 10240,
+          "cpu": 100,
+          "swap": 512,
+          "io": 500,
+          "databases": 2,
+          "allocations": 1,
+          "backups": 1,
+          "egg": 123,
+          "user": 456,
+          "allocation_default": 789
+        }
+      }
+    }
     ```
     </TabsContent>
 </Tabs>

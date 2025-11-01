@@ -3,3 +3,86 @@ title: Pterodactyl Provider
 description: Documentation for the Pterodactyl Provider
 icon: AppWindow
 ---
+
+import { Code, File } from 'lucide-react';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Installation
+
+To install the Pterodactyl provider, follow the steps below:
+
+<Steps>
+<Step>
+
+## Install Pterodactyl Provider's Module
+
+Download the latest `.jar` and put it inside of the rusty's module folder (`rc-modules` by default).
+You can find the releases [on Modrinth](https://modrinth.com/project/rcs-pterodactyl/versions). 
+
+</Step>
+
+<Step>
+
+## Install the module
+
+Put the `.jar` file inside of the rusty's module folder (`rc-modules` by default) and restart the RC kernel/the whole proxy. 
+
+</Step>
+</Steps>
+
+## Pterodactyl Metadata Keys
+
+The Pterodactyl provider supports the following metadata keys under `smart.pterodactyl`:
+
+- `disk`: Disk space allocation (in MB).
+- `cpu`: CPU limit.
+- `swap`: Swap space allocation (in MB).
+- `io`: I/O limit.
+- `databases`: Number of databases.
+- `allocations`: Number of allocations.
+- `backups`: Number of backups.
+- `egg`: Egg ID.
+- `user`: User ID.
+- `allocation_default`: Default allocation ID.
+
+
+<Tabs defaultValue="yaml">
+  <TabsList>
+    <TabsTrigger value="yaml">
+      <File />
+      YAML
+    </TabsTrigger>
+    <TabsTrigger value="json">
+      <Code />
+      JSON
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="yaml">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048, \"pterodactyl\": {\"disk\": 10240, \"cpu\": 100, \"swap\": 512, \"io\": 500, \"databases\": 2, \"allocations\": 1, \"backups\": 1, \"egg\": 123, \"user\": 456, \"allocation_default\": 789}}}"
+    ``` 
+  </TabsContent>
+    <TabsContent value="json">
+    ```yml
+    {
+      "softCap": 30,
+      "hardCap": 40,
+      "smart": {
+        "memory": 2048,
+        "pterodactyl": {
+          "disk": 10240,
+          "cpu": 100,
+          "swap": 512,
+          "io": 500,
+          "databases": 2,
+          "allocations": 1,
+          "backups": 1,
+          "egg": 123,
+          "user": 456,
+          "allocation_default": 789
+        }
+      }
+    }
+    ```
+    </TabsContent>
+</Tabs>
