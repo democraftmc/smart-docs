@@ -7,14 +7,6 @@ const inter = Inter({
   subsets: ['latin'],
 });
 
-export function baseOptions(): BaseLayoutProps {
-  return {
-    nav: {
-      title: 'Rusty Smart',
-    },
-  };
-}
-
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
