@@ -1,5 +1,6 @@
 {
-  "title": "Name of Folder 2",
-  "description": "The description of root folder (optional)",
+  "title": "Developer Documentation",
+  "description": "Documentation for developers working with Smart",
+  "icon": "MessageCircleCode",
   "root": true
 }

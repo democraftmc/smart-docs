@@ -1,0 +1,52 @@
+---
+title: Smart Manager
+description: Want to start using RC-Smart? Fantastic! Here is a simple tutorial to install the module
+icon: FileSliders
+---
+
+## Default Config
+
+
+## Providers Configuration
+
+Here is a sample configuration for smart's provider manager.
+
+
+```yml
+providers:
+  - id: "pterodactyl"
+    included-families:
+      - "lobby"
+      - "bedwars"
+    excluded-families:
+      - "auth"
+    max-processes: 5
+    ram-amount: 10240
+```
+
+The config is a list of providers with their own configuration. 
+The Smart Manager will try to use the providers in the order they are defined in the config.
+**Let's break this down!**
+
+### Provider id
+This is the unique identifier of the provider. It must match the provider id defined in the provider configuration.
+This id is specified in the provider's documentation.
+
+### Included Families
+This is a list of families that the provider can handle. If a family is not in this list, the provider will not be used to create servers for that family.
+If this list is empty, the provider will be used for all families.
+
+### Excluded Families
+This is a list of families that the provider cannot handle. If a family is in this list, the provider will not be used to create servers for that family.
+If a family is in both the included and excluded list, the excluded list takes precedence.
+
+### Max Processes
+This is the maximum number of concurrent processes that the provider can handle. If the provider is already handling the maximum number of processes, it will not be used to create new servers.
+One server counts for one proccess.
+
+### RAM Amount
+This is the amount of RAM (in MB) that the provider will allocate for each server.
+This is used to determine if the provider has enough resources to handle a new server.
+If the provider does not have enough RAM, it will not be used to create new servers.
+
+How do smart knows how much each server needs? We use [RustyConnector Metadata]. See all of Smart's metadata keys [here](./metadata.mdx).

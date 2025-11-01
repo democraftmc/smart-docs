@@ -1,0 +1,64 @@
+---
+title: Metadata
+description: List of all available metadata keys in Smart.
+icon: FolderSearch
+---
+import { Code, File } from 'lucide-react';
+
+## Smart Metadata Keys
+
+Smart uses metadata keys to store and retrieve various types of information related to families. Here is a list of commonly used metadata keys in Smart:
+
+- `smart.memory`: How much memory a server in x family uses.
+
+### Working with Metadata
+
+The default ruty metadata string looks like this:
+
+<Tabs defaultValue="yaml">
+  <TabsList>
+    <TabsTrigger value="yaml">
+      <File />
+      yaml
+    </TabsTrigger>
+    <TabsTrigger value="json">
+      <Code />
+      json
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="yaml">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    ```
+  </TabsContent>
+    <TabsContent value="json">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    ```
+    </TabsContent>
+</Tabs>
+
+To set a metadata key for a family, you can write it in json and then add it to the metadata string. For example, to set the `smart.memory` key to `2048` for a family, you would do the following:
+
+<Tabs defaultValue="yaml">
+  <TabsList>
+    <TabsTrigger value="yaml">
+      <File />
+      yaml
+    </TabsTrigger>
+    <TabsTrigger value="json">
+      <Code />
+      json
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="yaml">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048}}"
+    ``` 
+  </TabsContent>
+    <TabsContent value="json">
+    ```yml
+    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    ```
+    </TabsContent>
+</Tabs>

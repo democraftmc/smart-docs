@@ -1,4 +1,57 @@
 ---
-title: Hello World
-description: Your first document
+title: Welcome on board!
+description: Create with Smart
+icon: HardDriveDownload
 ---
+import { BookIcon } from 'lucide-react';
+
+# Installation 
+
+To use smart, you need to add smart's lib repo to your project
+
+<Tabs defaultValue="npm">
+  <TabsList>
+    <TabsTrigger value="npm">
+      <BookIcon />
+      Maven
+    </TabsTrigger>
+    <TabsTrigger value="kotlin">
+      <BookIcon />
+      Gradle Kotlin
+    </TabsTrigger>
+    <TabsTrigger value="groovy">
+      <BookIcon />
+      Gradle Groovy
+    </TabsTrigger>
+  </TabsList>
+  <TabsContent value="npm">
+    ```xml
+    <repository>
+        <id>funa-repo</id>
+        <name>Funa Java Repo</name>
+        <url>https://java.funa.dev/<repository></url>
+    </repository>
+    ```
+  </TabsContent>
+    <TabsContent value="kotlin">
+        ```kotlin
+        repositories {
+            maven {
+                name = "funaRepo"
+                url = uri("https://java.funa.dev/<repository>")
+            }
+        }
+        ``` 
+    </TabsContent>
+    <TabsContent value="groovy">
+        ```kotlin
+        repositories {
+            maven {
+                name "funaRepo"
+                url "https://java.funa.dev/<repository>"
+            }
+        }
+        ``` 
+    </TabsContent>  
+</Tabs>
+

@@ -1,5 +1,6 @@
 {
-  "title": "Name of Folder",
-  "description": "The description of root folder (optional)",
+  "title": "Smart Module",
+  "description": "The core of the Smart ecosystem",
+  "icon": "Bolt",
   "root": true
 }

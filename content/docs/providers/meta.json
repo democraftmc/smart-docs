@@ -1,5 +1,6 @@
 {
-  "title": "Name of Folder P",
-  "description": "The description of root folder (optional)",
+  "title": "Providers",
+  "description": "Create and manage providers for Smart",
+  "icon": "ServerCog",
   "root": true
 }

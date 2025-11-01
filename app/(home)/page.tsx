@@ -1,16 +1,42 @@
 import Link from 'next/link';
 
 export default function HomePage() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="flex flex-col justify-center text-center flex-1">
-      <h1 className="text-2xl font-bold mb-4">Hello World</h1>
-      <p>
-        You can open{' '}
-        <Link href="/docs" className="font-medium underline">
-          /docs
-        </Link>{' '}
-        and see the documentation.
-      </p>
+    <div className="flex flex-col min-h-screen bg-black text-white">
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-teal-500/30 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-blue-500/30 rounded-full blur-3xl animate-pulse-slow animation-delay-2000"></div>
+        <div className="absolute top-1/4 right-1/4 w-1/3 h-1/3 bg-yellow-500/20 rounded-full blur-3xl animate-pulse-slow animation-delay-4000"></div>
+      </div>
+
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center text-center px-4">
+        <div className="p-8 rounded-lg backdrop-blur-sm bg-black/20 border border-white/10">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4">
+            Smart Docs
+          </h1>
+          <p className="text-lg md:text-xl mb-8 text-neutral-300">
+            Choose a documentation
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+            <Link href="/docs/smart" className="text-xl font-medium hover:text-teal-400 transition-colors duration-300">
+              Smart
+            </Link>
+            <Link href="/docs/providers" className="text-xl font-medium hover:text-blue-400 transition-colors duration-300">
+              Providers
+            </Link>
+            <Link href="/docs/dev" className="text-xl font-medium hover:text-yellow-400 transition-colors duration-300">
+              Dev
+            </Link>
+          </div>
+        </div>
+      </main>
+
+      <footer className="relative z-10 w-full text-center p-4 text-xs text-neutral-500">
+        © {currentYear} DEMOCRAFT. All Rights Reserved
+      </footer>
     </div>
   );
 }
