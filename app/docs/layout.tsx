@@ -21,7 +21,7 @@ export const linkItems: LinkItemType[] = [
     text: 'Sponsors',
     url: 'https://github.com/sponsors/Funasitien',
     icon: <Heart />,
-  }🐛
+  }
 ];
 
 
