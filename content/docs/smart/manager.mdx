@@ -6,31 +6,35 @@ icon: FileSliders
 
 ## Default Config
 
+Smart's core configuration lives at `rustyconnector/smart/config.yml`:
+
+```yml
+# Name of the Haze database used to persist the registry of live smart servers.
+database: "default"
+```
+
+Make sure a Haze driver (MySQL, Postgres, ...) is installed and the database is registered under this name.
 
 ## Providers Configuration
 
-Here is a sample configuration for smart's provider manager.
-
+Each provider has its own config file at `rustyconnector/smart/providers/<id>.yml`:
 
 ```yml
-providers:
-  - id: "pterodactyl"
-    included-families:
-      - "lobby"
-      - "bedwars"
-    excluded-families:
-      - "auth"
-    max-processes: 5
-    ram-amount: 10240
+providerId: "pterodactyl"
+includedFamilies:
+  - "lobby"
+  - "bedwars"
+excludedFamilies:
+  - "auth"
+maxProcesses: 5
+priority: 10
 ```
 
-The config is a list of providers with their own configuration. 
-The Smart Manager will try to use the providers in the order they are defined in the config.
+The Smart core tests providers by descending priority.
 **Let's break this down!**
 
 ### Provider id
-This is the unique identifier of the provider. It must match the provider id defined in the provider configuration.
-This id is specified in the provider's documentation.
+The provider's name **is the name of its config file**: `pterodactyl.yml` → provider `pterodactyl`, `node-1-west.yml` → provider `node-1-west`. The file also declares `providerId` inside, which must match the file name and the id the provider module registers itself with. The id is the technical key used everywhere (registry, `smart.<providerId>` metadata block, env overrides like `SMART_PTERODACTYL_EGG`).
 
 ### Included Families
 This is a list of families that the provider can handle. If a family is not in this list, the provider will not be used to create servers for that family.
@@ -42,11 +46,13 @@ If a family is in both the included and excluded list, the excluded list takes p
 
 ### Max Processes
 This is the maximum number of concurrent processes that the provider can handle. If the provider is already handling the maximum number of processes, it will not be used to create new servers.
-One server counts for one proccess.
+One server counts for one process.
+
+### Priority
+When several providers can serve the same family, the one with the **highest priority** is tested first. If it has no capacity left, the next one is tried. Defaults to `0`.
+
+### Reusing a provider multiple times
+The same provider type can be registered several times — just add more files with distinct names, e.g. `node-1-west.yml` and `node-1-east.yml`, each declaring its own `providerId` matching the file name. Use `priority` to control which instance is preferred.
 
 ### RAM Amount
-This is the amount of RAM (in MB) that the provider will allocate for each server.
-This is used to determine if the provider has enough resources to handle a new server.
-If the provider does not have enough RAM, it will not be used to create new servers.
-
-How do smart knows how much each server needs? We use [RustyConnector Metadata]. See all of Smart's metadata keys [here](./metadata.mdx).
+RAM is **not** configured per provider anymore. Each family declares how much memory its smart servers need via the `smart.memory` metadata key. See all of Smart's metadata keys [here](./metadata.mdx).

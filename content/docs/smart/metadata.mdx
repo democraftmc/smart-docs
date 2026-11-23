@@ -10,7 +10,9 @@ import { Code, File } from 'lucide-react';
 
 Smart uses metadata keys to store and retrieve various types of information related to families. Here is a list of commonly used metadata keys in Smart:
 
-- `smart.memory`: How much memory a server in x family uses.
+- `smart.memory` sets the shared RAM default in whole MB (1 MB = 1,000,000 bytes).
+- `smart.cpu` sets the shared CPU default in cores and accepts fractions.
+- `smart.<providerId>` contains workload settings and overrides for that provider instance. See [provider documentation](/docs/providers/official).
 
 ### Working with Metadata
 
@@ -29,20 +31,22 @@ The default ruty metadata string looks like this:
   </TabsList>
   <TabsContent value="yaml">
     ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40}"
+    metadata:
+      softCap: 30
+      hardCap: 40
     ```
   </TabsContent>
     <TabsContent value="json">
-    ```yml
+    ```json
     {
       "softCap": 30,
-      "hardCap": 40,
+      "hardCap": 40
     }
     ```
     </TabsContent>
 </Tabs>
 
-To set a metadata key for a family, you can write it in json and then add it to the metadata string. For example, to set the `smart.memory` key to `2048` for a family, you would do the following:
+To set a metadata key for a family, add it to the metadata object. For example, to set the `smart.memory` key to `2048` for a family, you would do the following:
 
 <Tabs defaultValue="yaml">
   <TabsList>
@@ -57,11 +61,15 @@ To set a metadata key for a family, you can write it in json and then add it to 
   </TabsList>
   <TabsContent value="yaml">
     ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048}}"
-    ``` 
+    metadata:
+      softCap: 30
+      hardCap: 40
+      smart:
+        memory: 2048
+    ```
   </TabsContent>
     <TabsContent value="json">
-    ```yml
+    ```json
     {
       "softCap": 30,
       "hardCap": 40,
@@ -72,6 +80,27 @@ To set a metadata key for a family, you can write it in json and then add it to 
     ```
     </TabsContent>
 </Tabs>
+
+## Environment Variables
+
+### Path-based overrides (recommended)
+
+Every metadata path can be overridden by an environment variable **without touching the config**. The variable name is derived from the dotted path: uppercase it, replace dots with underscores, strip the leading `smart.` root, and prefix with `SMART_`.
+
+| Metadata path | Env override |
+| --- | --- |
+| `smart.memory` | `SMART_MEMORY` |
+| `smart.pterodactyl.egg` | `SMART_PTERODACTYL_EGG` |
+| `smart.docker.env.EULA` | `SMART_DOCKER_ENV_EULA` |
+
+The env var wins over the config value; the config value acts as the default. Numeric/boolean defaults are coerced from the env string when possible.
+
+```bash
+export SMART_DOCKER_ENV_EULA="TRUE"
+export SMART_MEMORY=4096
+```
+
+Set connection credentials in the proxy environment using each provider’s `RC_<ID>_TOKEN` setting. Use `smart.<providerId>.env` for variables passed to the workload.
 
 ## Providers Metadata Keys
 
@@ -94,11 +123,26 @@ Here is an example with the pterodactyl provider:
   </TabsList>
   <TabsContent value="yaml">
     ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048, \"pterodactyl\": {\"disk\": 10240, \"cpu\": 100, \"swap\": 512, \"io\": 500, \"databases\": 2, \"allocations\": 1, \"backups\": 1, \"egg\": 123, \"user\": 456, \"allocation_default\": 789}}}"
-    ``` 
+    metadata:
+      softCap: 30
+      hardCap: 40
+      smart:
+        memory: 2048
+        pterodactyl:
+          disk: 10240
+          cpu: 100
+          swap: 512
+          io: 500
+          databases: 2
+          allocations: 1
+          backups: 1
+          egg: 123
+          user: 456
+          allocation_default: 789
+    ```
   </TabsContent>
     <TabsContent value="json">
-    ```yml
+    ```json
     {
       "softCap": 30,
       "hardCap": 40,

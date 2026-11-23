@@ -15,17 +15,12 @@
 }
 
 @font-face {
-  font-family: 'Mono';
-  src: url('/JetBrainsMono-Regular.ttf') format('truetype');
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: 'Mono';
-  src: url('/JetBrainsMono-Bold.ttf') format('truetype');
-  font-weight: 600;
+    font-family: 'Monocraft';
+    src: url('https://cdn.jsdelivr.net/gh/IdreesInc/Monocraft@main/dist/Monocraft-ttf/Monocraft.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
 h1, h2, h3, h4, h5, h6, .font-bold.text-lg, .mono {
-  font-family: 'Mono', monospace;
+  font-family: 'Monocraft', monospace;
 }

@@ -1,0 +1,77 @@
+---
+title: 4. Register the Module
+description: rc-module.json and the builder class.
+icon: Puzzle
+---
+
+**`src/main/resources/rc-module.json`**
+
+```json
+{
+  "main": "group.aelysium.rustyconnector.modules.smart_mock.MockBuilder",
+  "name": "Smart-Mock",
+  "description": "Mock provider for Smart.",
+  "dependencies": ["Smart"],
+  "environments": ["proxy"]
+}
+```
+
+`dependencies: ["Smart"]` guarantees the Smart core is loaded first. Smart's `sharedPackages` entry (`group.aelysium.rustyconnector.modules.smart.api`) makes the api classes visible to your classloader at runtime — declare them compile-only in Gradle, never shade them.
+
+**`MockBuilder.java`**
+
+```java
+package group.aelysium.rustyconnector.modules.smart_mock;
+
+import group.aelysium.rustyconnector.RC;
+import group.aelysium.rustyconnector.common.errors.Error;
+import group.aelysium.rustyconnector.common.modules.ExternalModuleBuilder;
+import group.aelysium.rustyconnector.common.modules.Module;
+import group.aelysium.rustyconnector.modules.smart.ProviderConfig;
+import group.aelysium.rustyconnector.modules.smart.SmartModule;
+import group.aelysium.rustyconnector.proxy.ProxyKernel;
+import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public class MockBuilder extends ExternalModuleBuilder<MockBuilder.MockModule> {
+
+    public static class MockModule implements Module {
+        private final MockProvider provider;
+
+        public MockModule(MockProvider provider) {
+            this.provider = provider;
+        }
+
+        public MockProvider provider() {
+            return this.provider;
+        }
+
+        @Override
+        public @Nullable Component details() {
+            return Component.text("Smart-Mock provider registered.");
+        }
+
+        @Override
+        public void close() throws Exception {}
+    }
+
+    @NotNull
+    @Override
+    public MockModule onStart(@NotNull Context context) throws Exception {
+        ProviderConfig config = ProviderConfig.New("mock");
+        return new MockModule(new MockProvider(config));
+    }
+
+    @Override
+    public void bind(@NotNull ProxyKernel kernel, @NotNull MockModule instance) {
+        try {
+            RC.Kernel().fetchModule("Smart").ifPresent(m -> {
+                if (m instanceof SmartModule smart) smart.registerProvider(instance.provider());
+            });
+        } catch (Exception e) {
+            RC.Error(Error.from(e).whileAttempting("To bind Smart-Mock."));
+        }
+    }
+}
+```

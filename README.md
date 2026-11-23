@@ -15,6 +15,19 @@ yarn dev
 
 Open http://localhost:3000 with your browser to see the result.
 
+## Static build
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+python3 -m http.server --directory out 8000
+```
+
+Open http://localhost:8000 to preview the exported site. The GitHub Actions
+workflow publishes `out/` to GitHub Pages on the `smart.democraft.fr` custom
+domain. In the repository's Pages settings, use **GitHub Actions** as the
+publishing source.
+
 ## Explore
 
 In the project, you can see:

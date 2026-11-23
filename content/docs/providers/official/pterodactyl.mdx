@@ -1,88 +1,90 @@
 ---
-title: Pterodactyl Panel
-description: Documentation for the Pterodactyl Provider
+title: Pterodactyl
+description: Install and configure the Pterodactyl provider for RustyConnector Smart.
 icon: AppWindow
 ---
 
-import { Code, File } from 'lucide-react';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+## Install
 
-## Installation
+With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-pterodactyl` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-pterodactyl-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
 
-To install the Pterodactyl provider, follow the steps below:
+## Register an instance
 
-<Steps>
-<Step>
+Create `rustyconnector/smart/providers/pterodactyl.yml`:
 
-## Install Pterodactyl Provider's Module
+```yaml
+providerId: pterodactyl
+includedFamilies: [lobby]
+excludedFamilies: []
+maxProcesses: 5
+priority: 10
+```
 
-Download the latest `.jar` and put it inside of the rusty's module folder (`rc-modules` by default).
-You can find the releases [on Modrinth](https://modrinth.com/project/rcs-pterodactyl/versions). 
+Replace `lobby` with your family ID. Smart chooses the highest-priority eligible instance with spare capacity. Use `RC_PTERODACTYL_IDS` for a comma-separated list of instance IDs, or `RC_PTERODACTYL_ID` for a single custom ID. The list takes precedence, and the default ID is `pterodactyl`. Give each instance its own file and use the same ID as its key under `metadata.smart`.
 
-</Step>
+## Connect to Pterodactyl
 
-<Step>
+Uses the [Panel v1.12.4 Application API](https://github.com/pterodactyl/panel/blob/v1.12.4/routes/api-application.php) over HTTPS. Create a Panel Application API key with **Servers: Read & Write** and inject it as `RC_PTERODACTYL_TOKEN`. Set the base URL, for example `RC_PTERODACTYL_ENDPOINT=https://panel.example.net`.
 
-## Install the module
+Use the numeric ID of an existing Panel user, the installed [Paper egg](https://github.com/pterodactyl/panel/blob/v1.12.4/database/Seeders/eggs/minecraft/egg-paper.json), and an existing location with free allocations on a Wings node. Substitute those IDs for `7`, `42`, and `3`. To use a particular free allocation, replace `location: 3` with `allocation_default: <numeric allocation ID>`. The proxy must be able to reach the assigned game address. Disk and swap are in MiB. Swap, databases, extra allocations, and backups default to zero. I/O weight defaults to 500.
 
-Put the `.jar` file inside of the rusty's module folder (`rc-modules` by default) and restart the RC kernel/the whole proxy. 
+For a private HTTPS CA, set `RC_PTERODACTYL_CA` to a PEM CA bundle.
 
-</Step>
-</Steps>
+## Configure the family
 
-## Pterodactyl Metadata Keys
+Add this to the selected family's YAML. Restart the proxy after setting its environment and provider configuration.
 
-The Pterodactyl provider supports the following metadata keys under `smart.pterodactyl`:
+```yaml
+metadata:
+  smart:
+    memory: 2048
+    cpu: 1
+    pterodactyl:
+      user: 7
+      egg: 42
+      location: 3
+      image: ghcr.io/pterodactyl/yolks:java_21
+      startup: "java -Dcom.mojang.eula.agree=true -Xms128M -XX:MaxRAMPercentage=75 -jar {{SERVER_JARFILE}} nogui"
+      cpu: 122
+      disk: 4096
+      swap: 0
+      io: 500
+      databases: 0
+      allocations: 0
+      backups: 0
+      env:
+        SERVER_JARFILE: "server.jar"
+        MINECRAFT_VERSION: "1.21.4"
+        BUILD_NUMBER: "latest"
+        DL_PATH: ""
+```
 
-- `disk`: Disk space allocation (in MB).
-- `cpu`: CPU limit.
-- `swap`: Swap space allocation (in MB).
-- `io`: I/O limit.
-- `databases`: Number of databases.
-- `allocations`: Number of allocations.
-- `backups`: Number of backups.
-- `egg`: Egg ID.
-- `user`: User ID.
-- `allocation_default`: Default allocation ID.
+### Metadata reference
 
+Shared `smart.memory` defaults to 1024 whole MB (1 MB = 1,000,000 bytes) and `smart.cpu` defaults to 1 core. The keys below go under `smart.pterodactyl`. Instance values override shared defaults, and Smart uses the shared RAM value for registry accounting.
 
-<Tabs defaultValue="yaml">
-  <TabsList>
-    <TabsTrigger value="yaml">
-      <File />
-      YAML
-    </TabsTrigger>
-    <TabsTrigger value="json">
-      <Code />
-      JSON
-    </TabsTrigger>
-  </TabsList>
-  <TabsContent value="yaml">
-    ```yml
-    "metadata": "{\"softCap\": 30, \"hardCap\": 40, \"smart\": {\"memory\": 2048, \"pterodactyl\": {\"disk\": 10240, \"cpu\": 100, \"swap\": 512, \"io\": 500, \"databases\": 2, \"allocations\": 1, \"backups\": 1, \"egg\": 123, \"user\": 456, \"allocation_default\": 789}}}"
-    ``` 
-  </TabsContent>
-    <TabsContent value="json">
-    ```yml
-    {
-      "softCap": 30,
-      "hardCap": 40,
-      "smart": {
-        "memory": 2048,
-        "pterodactyl": {
-          "disk": 10240,
-          "cpu": 100,
-          "swap": 512,
-          "io": 500,
-          "databases": 2,
-          "allocations": 1,
-          "backups": 1,
-          "egg": 123,
-          "user": 456,
-          "allocation_default": 789
-        }
-      }
-    }
-    ```
-    </TabsContent>
-</Tabs>
+| Key | Meaning |
+| --- | --- |
+| `memory` | Optional override. Whole MB, rounded up to MiB for the Panel. |
+| `cpu` | Optional override. Whole percent of one core. Shared `cpu: 1` maps to `100`; instance `cpu: 122` sends `122`. |
+| `env` | Optional map of server environment variables. Quote values to preserve their spelling. |
+| `user` or `owner` | Required numeric Panel user ID. Set one of these aliases. |
+| `egg` | Required numeric egg ID. |
+| `image` | Required egg-compatible Docker image reference. |
+| `startup` | Required Wings startup command. Egg variable placeholders are supported. |
+| `location` | Numeric location ID for automatic allocation. Set either this or `allocation_default`. |
+| `allocation_default` | Numeric ID of a specific free allocation. |
+| `disk` | Required positive disk limit in MiB. |
+| `swap` | Swap in MiB. Defaults to `0`. Use `-1` for unlimited swap. |
+| `io` | Block I/O weight from 10 to 1000. Defaults to `500`. |
+| `databases`, `allocations`, `backups` | Nonnegative Panel feature limits. Each defaults to `0`. |
+
+Smart resolves environment overrides at each leaf before falling back to YAML. For example, `SMART_PTERODACTYL_ENV_MINECRAFT_VERSION` overrides a declared workload variable, and `SMART_PTERODACTYL_CPU` sets the instance CPU override. Custom IDs retain hyphens in `SMART_*` names. Use your process manager or `env` to set names containing hyphens. Connection settings belong in the proxy environment and use `RC_<ID>_*` with hyphens converted to underscores.
+
+## Verify provisioning
+
+The EULA settings in this example signal acceptance of the Minecraft EULA. Success means the Panel created the server and requested Wings to start it after installation. Smart stores the Panel's numeric server ID for deletion.
+
+Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the Panel server name before provisioning again.
+
+Run `gradle test` in `rcm-smart-pterodactyl` for the local integration suite. It uses real family metadata and needs no backend or credentials.

@@ -1,0 +1,74 @@
+---
+title: 1. Project Setup
+description: Scaffold the Gradle module.
+icon: Package
+---
+
+Create a new module next to the other `rcm-*` modules (or clone the [example repo](https://github.com/Aelysium-Group/rcm-smart-mock) and follow along):
+
+```bash
+mkdir rcm-smart-mock
+cd rcm-smart-mock
+mkdir -p src/main/java/group/aelysium/rustyconnector/modules/smart_mock
+mkdir -p src/main/resources
+```
+
+**`settings.gradle`**
+
+```groovy
+rootProject.name = 'rcm-smart-mock'
+```
+
+**`gradle.properties`**
+
+```properties
+module_version          = 0.1.0
+rustyconnector_version  = 0.9.3
+archives_base_name      = rcm-smart-mock
+```
+
+**`build.gradle`** — same shape as the other `rcm-*` modules. Core and Adventure are `compileOnly` (they live in the runtime parent classloader, never shade them):
+
+```groovy
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies { classpath 'com.gradleup.shadow:shadow-gradle-plugin:9.0.0-beta4' }
+}
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'com.gradleup.shadow'
+
+group = 'group.aelysium'
+version = module_version
+
+repositories {
+    mavenCentral()
+    maven { url = "https://java.funa.dev/snapshots/" }
+    maven { url = "https://java.funa.dev/releases/" }
+}
+
+dependencies {
+    compileOnly 'group.aelysium.rustyconnector:core:' + rustyconnector_version
+    compileOnly 'net.kyori:adventure-api:4.17.0'
+    // Smart's exported api package (compile-time only — at runtime it comes
+    // from the Smart module's classloader via sharedPackages)
+    compileOnly files('../rcm-smart/build/libs/rcm-smart-0.1.0.jar')
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+shadowJar {
+    archiveBaseName.set(archives_base_name)
+    archiveClassifier.set('')
+    mergeServiceFiles()
+}
+
+tasks.named('jar').configure { enabled = false }
+jar.finalizedBy(shadowJar)
+```
+
+Build once with `gradle shadowJar` to produce the api jar the dependency above points at.

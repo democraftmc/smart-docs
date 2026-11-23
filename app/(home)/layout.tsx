@@ -1,9 +1,9 @@
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '@/lib/layout.shared';
-import { type LinkItemType } from 'fumadocs-ui/layouts/docs';
+import type { LinkItemType } from 'fumadocs-ui/layouts/shared';
 import { Album, LifeBuoy, Heart } from 'lucide-react';
 
-export const linkItems: LinkItemType[] = [
+const linkItems: LinkItemType[] = [
   {
     icon: <Album />,
     text: 'Docs',

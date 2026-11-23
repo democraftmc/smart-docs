@@ -1,0 +1,6 @@
+{
+  "title": "Custom Provider Tutorial",
+  "description": "Build a Smart provider from scratch, step by step",
+  "icon": "GraduationCap",
+  "pages": ["index", "setup", "provider-config", "implement-provider", "register-module", "metadata", "build-and-test"]
+}

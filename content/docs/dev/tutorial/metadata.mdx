@@ -1,0 +1,41 @@
+---
+title: 5. Family Metadata
+description: Per-family settings and environment overrides.
+icon: Tags
+---
+
+Providers read per-family settings from the family's `metadata` JSON, under the `smart` key. For the mock provider on a `bedwars` family:
+
+```yml
+metadata:
+  softCap: 30
+  hardCap: 40
+  smart:
+    memory: 2048
+    mock:
+      region: "eu-west"
+      fakeLatencyMs: 12
+```
+
+Read them from the provider with `SmartMetadata`:
+
+```java
+long memory = SmartMetadata.memory(family, 1024);                       // smart.memory
+var mock = SmartMetadata.providerData(family, "mock").orElseThrow();    // smart.mock.*
+var region = SmartMetadata.fetch(family, "smart.mock.region");         // dotted path
+```
+
+## Environment overrides
+
+Any path can be overridden by an env var without touching the config. The name is derived from the path — uppercase, dots become underscores, leading `smart.` stripped, `SMART_` prefix:
+
+| Metadata path | Env override |
+| --- | --- |
+| `smart.memory` | `SMART_MEMORY` |
+| `smart.mock.region` | `SMART_MOCK_REGION` |
+
+```bash
+export SMART_MOCK_REGION="us-east"
+```
+
+The env var wins over the config value, which acts as the default. Numeric/boolean defaults are coerced from the env string when possible. Use the provider’s connection settings for API keys and tokens. See the [provider documentation](/docs/providers/official) for the supported settings.

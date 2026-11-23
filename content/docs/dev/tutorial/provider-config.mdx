@@ -1,0 +1,26 @@
+---
+title: 2. Provider Config
+description: The YAML file Smart reads for your provider.
+icon: FileCog
+---
+
+Smart reads one config file per provider instance from `rustyconnector/smart/providers/`. The **file name is the provider's id**: `mock.yml` → provider id `mock`.
+
+**`rustyconnector/smart/providers/mock.yml`**
+
+```yml
+providerId: "mock"          # must match the file name
+includedFamilies: []        # empty = all families (minus excluded)
+excludedFamilies:
+  - "auth"
+maxProcesses: 5
+priority: 0                 # higher = tested first when several providers match
+```
+
+In your provider module, load it with declarative-yaml:
+
+```java
+ProviderConfig config = ProviderConfig.New("mock");
+```
+
+Run several instances of the same provider type by adding more files with distinct names (`node-1-west.yml`, `node-1-east.yml`) — see [reusing a provider](/docs/smart/manager#reusing-a-provider-multiple-times).

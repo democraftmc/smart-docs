@@ -8,20 +8,14 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
 });
 
-export function createMetadata(override: Metadata): Metadata {
-  return {
-    ...override,
-  };
-}
-
-export const metadata = createMetadata({
+export const metadata: Metadata = {
   title: {
     template: '%s | Smart',
     default: 'Smart',
   },
   description: 'Dynamically create & delete server, with ANY provider, and the magic of RustyConnector',
-  metadataBase: "https://smart.democraft.fr",
-});
+  metadataBase: new URL('https://smart.democraft.fr'),
+};
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (

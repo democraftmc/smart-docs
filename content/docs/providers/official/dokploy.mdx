@@ -1,0 +1,74 @@
+---
+title: Dokploy
+description: Install and configure the Dokploy provider for RustyConnector Smart.
+icon: ServerCog
+---
+
+## Install
+
+With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-dokploy` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-dokploy-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
+
+## Register an instance
+
+Create `rustyconnector/smart/providers/dokploy.yml`:
+
+```yaml
+providerId: dokploy
+includedFamilies: [lobby]
+excludedFamilies: []
+maxProcesses: 5
+priority: 10
+```
+
+Replace `lobby` with your family ID. Smart chooses the highest-priority eligible instance with spare capacity. Use `RC_DOKPLOY_IDS` for a comma-separated list of instance IDs, or `RC_DOKPLOY_ID` for a single custom ID. The list takes precedence, and the default ID is `dokploy`. Give each instance its own file and use the same ID as its key under `metadata.smart`.
+
+## Connect to Dokploy
+
+Uses the [Dokploy v0.30.5 OpenAPI endpoints](https://github.com/Dokploy/dokploy/blob/v0.30.5/openapi.json) over HTTPS with an `x-api-key` header. Inject an organization owner or admin API key as `RC_DOKPLOY_TOKEN`. Set the dashboard base URL, for example `RC_DOKPLOY_ENDPOINT=https://deploy.example.net`. The key needs access to create, configure, deploy, and delete services in the target project and write environment variables.
+
+Use an existing project environment ID. The example targets a self-hosted local Swarm. Add `serverId` for a registered remote deployment server when required by the instance. Route the game port to the proxy, for example over Dokploy's shared overlay network, with the proxy attached to that network.
+
+For a private HTTPS CA, set `RC_DOKPLOY_CA` to a PEM CA bundle.
+
+## Configure the family
+
+Add this to the selected family's YAML. Restart the proxy after setting its environment and provider configuration.
+
+```yaml
+metadata:
+  smart:
+    memory: 2048
+    cpu: 0.75
+    dokploy:
+      mode: docker
+      environmentId: "<Dokploy environment ID>"
+      image: itzg/minecraft-server:java21
+      env:
+        EULA: "TRUE"
+        TYPE: "PAPER"
+        VERSION: "1.21.4"
+```
+
+### Metadata reference
+
+Shared `smart.memory` defaults to 1024 whole MB (1 MB = 1,000,000 bytes) and `smart.cpu` defaults to 1 core. The keys below go under `smart.dokploy`. Instance values override shared defaults, and Smart uses the shared RAM value for registry accounting.
+
+| Key | Meaning |
+| --- | --- |
+| `memory` | Optional override. Whole MB. Smart sends Swarm bytes as a decimal string. |
+| `cpu` | Optional override. Cores. Smart sends Swarm nanoCPUs as a decimal string. |
+| `env` | Optional map of server environment variables. Quote values to preserve their spelling. |
+| `mode` | Optional display setting. The supported value is `docker`. |
+| `environmentId` | Required Dokploy project environment ID. |
+| `serverId` | Optional deployment server ID. Required by Dokploy when remote deployment is mandatory. |
+| `image` | Required Docker image reference. |
+
+Smart resolves environment overrides at each leaf before falling back to YAML. For example, `SMART_DOKPLOY_ENV_EULA` overrides a declared workload variable, and `SMART_DOKPLOY_CPU` sets the instance CPU override. Custom IDs retain hyphens in `SMART_*` names. Use your process manager or `env` to set names containing hyphens. Connection settings belong in the proxy environment and use `RC_<ID>_*` with hyphens converted to underscores.
+
+## Verify provisioning
+
+Docker images without registry credentials are supported. The optional `mode` accepts `docker`. Dokploy converts the configured `memoryLimit` and `cpuLimit` to [Swarm limits](https://github.com/Dokploy/dokploy/blob/v0.30.5/packages/server/src/utils/docker/utils.ts). The provider rejects other workload settings and environment values it cannot encode literally, including single quotes and line breaks. Success means Dokploy created the application, configured its image, environment, and limits, and accepted deployment. Smart stores the application ID.
+
+Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the application display name before provisioning again.
+
+Run `gradle test` in `rcm-smart-dokploy` for the local integration suite. It uses real family metadata and needs no backend or credentials.

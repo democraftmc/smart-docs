@@ -1,5 +1,66 @@
 ---
 title: Integrate Smart
-description: Create with Smart
+description: Use the Smart core API from your own modules.
 icon: MessageCircleCode
 ---
+
+The Smart core module exports its API package (`group.aelysium.rustyconnector.modules.smart.api`) to other native modules via `sharedPackages`. Fetch the module at runtime:
+
+```java
+RC.Kernel().fetchModule("Smart").ifPresent(m -> {
+    if (m instanceof SmartModule smart) {
+        // ...
+    }
+});
+```
+
+## Workload provider API
+
+Smart exports `group.aelysium.rustyconnector.modules.smart.api.workloads` with the rest of its API. Declare Smart as a native module dependency and use its JAR as a Gradle `compileOnly` dependency.
+
+- Call `ProviderBuilder.start` and `ProviderBuilder.bind` from the corresponding hooks in your `ExternalModuleBuilder`. Smart is available during those hooks, after native module discovery. The helper loads one `ProviderConfig` per instance and registers the providers with Smart.
+- `Provider` implements Smart's family filters, priority, and registry-based capacity checks. Its lifecycle helpers report ambiguous creates and can clean up a workload after a later provisioning step fails.
+- `Settings` validates family metadata, applies Smart's leaf overrides, and converts shared CPU and RAM to backend units.
+- `Api` handles HTTP requests, timeouts, response IDs, and idempotent deletion when a backend returns HTTP 404.
+
+The [provider documentation](/docs/providers/official) shows how the bundled providers use this API.
+
+## Reading family metadata — `SmartMetadata`
+
+```java
+// Dotted-path lookup, e.g. "smart.pterodactyl.egg"
+Optional<Object> egg = SmartMetadata.fetch(family, "smart.pterodactyl.egg");
+
+// Typed lookup with number coercion
+Optional<Long> memory = SmartMetadata.fetch(family, "smart.memory", Long.class);
+
+// RAM in MB for the family's smart servers (fallback if unset)
+long ram = SmartMetadata.memory(family, 1024);
+
+// The whole provider-specific block as a map: smart.<providerId>
+Optional<Map<String, Object>> ptero = SmartMetadata.providerData(family, "pterodactyl");
+```
+
+Every path can be overridden by an env var derived from the path itself — `smart.pterodactyl.egg` is overridden by `SMART_PTERODACTYL_EGG` (uppercase, dots → underscores, `smart.` root stripped, `SMART_` prefix). The env var wins over the config default; `SmartMetadata.envKeyFor(path)` returns the exact name.
+
+## Server registry — `SmartModule.servers()`
+
+The `smart_servers` Haze table is the single source of truth for every provisioned server. You never need your own cache:
+
+```java
+smart.servers().servers();                       // all smart servers
+smart.servers().serversByFamily("bedwars");      // servers of one family
+smart.servers().serversByProvider("pterodactyl"); // servers of one provider
+smart.servers().countByProvider("pterodactyl");   // live process count
+smart.servers().fetch(id);                       // one server by id
+```
+
+Each row is a `SmartServer` record: `id`, `providerId`, `familyId`, `rcServerId` (the provider-side id), `status`, `ramAmount`, `createdAt`.
+
+## Orchestration — `SmartModule`
+
+```java
+smart.provision(family);   // picks the highest-priority matching provider with capacity, provisions, registers
+smart.deprovision(id);     // tells the provider to destroy the server, unregisters it
+smart.providers();         // ProviderRegistry: fetch(id), findForFamily(familyId) — sorted by priority desc
+```

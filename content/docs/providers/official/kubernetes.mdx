@@ -1,10 +1,84 @@
 ---
 title: Kubernetes
-description: Documentation for the Pterodactyl Provider
+description: Install and configure the Kubernetes provider for RustyConnector Smart.
 icon: Boxes
 ---
 
-import { Code, File } from 'lucide-react';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+## Install
 
-## Installation
+With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-kubernetes` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-kubernetes-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
+
+## Register an instance
+
+Create `rustyconnector/smart/providers/kubernetes.yml`:
+
+```yaml
+providerId: kubernetes
+includedFamilies: [lobby]
+excludedFamilies: []
+maxProcesses: 5
+priority: 10
+```
+
+Replace `lobby` with your family ID. Smart chooses the highest-priority eligible instance with spare capacity. Use `RC_KUBERNETES_IDS` for a comma-separated list of instance IDs, or `RC_KUBERNETES_ID` for a single custom ID. The list takes precedence, and the default ID is `kubernetes`. Give each instance its own file and use the same ID as its key under `metadata.smart`.
+
+## Connect to Kubernetes
+
+Uses the [core/v1 Pod API](https://kubernetes.io/docs/reference/kubernetes-api/core/pod-v1/) over HTTPS with a bearer token. Use the API server URL without `/api`. The example uses a `smart-proxy` ServiceAccount with permission to create and delete core-group Pods in `minecraft`. Run the applicable setup commands:
+
+```sh
+kubectl create namespace minecraft
+kubectl -n minecraft create serviceaccount smart-proxy
+kubectl -n minecraft create role smart-pods --verb=create,delete --resource=pods
+kubectl -n minecraft create rolebinding smart-pods --role=smart-pods --serviceaccount=minecraft:smart-proxy
+```
+
+Set the connection variables in the proxy environment. Rotate the token in that environment before it expires.
+
+```sh
+export RC_KUBERNETES_ENDPOINT=https://kubernetes.example.net:6443
+export RC_KUBERNETES_CA=/etc/smart/kubernetes-ca.pem
+export RC_KUBERNETES_TOKEN="$(kubectl -n minecraft create token smart-proxy)"
+```
+
+For a private HTTPS CA, set `RC_KUBERNETES_CA` to a PEM CA bundle.
+
+## Configure the family
+
+Add this to the selected family's YAML. Restart the proxy after setting its environment and provider configuration.
+
+```yaml
+metadata:
+  smart:
+    memory: 2048
+    cpu: 0.75
+    kubernetes:
+      namespace: minecraft
+      image: itzg/minecraft-server:java21
+      env:
+        EULA: "TRUE"
+        TYPE: "PAPER"
+        VERSION: "1.21.4"
+```
+
+### Metadata reference
+
+Shared `smart.memory` defaults to 1024 whole MB (1 MB = 1,000,000 bytes) and `smart.cpu` defaults to 1 core. The keys below go under `smart.kubernetes`. Instance values override shared defaults, and Smart uses the shared RAM value for registry accounting.
+
+| Key | Meaning |
+| --- | --- |
+| `memory` | Optional override. Whole MB. Smart sends decimal `M` quantities. Requests and limits use the same CPU and memory values. |
+| `cpu` | Optional override. Cores in increments of 0.001. Smart sends millicores. |
+| `env` | Optional map of server environment variables. Quote values to preserve their spelling. |
+| `namespace` | Required existing namespace, up to 52 characters. |
+| `image` | Required Pod container image reference. |
+
+Smart resolves environment overrides at each leaf before falling back to YAML. For example, `SMART_KUBERNETES_ENV_EULA` overrides a declared workload variable, and `SMART_KUBERNETES_CPU` sets the instance CPU override. Custom IDs retain hyphens in `SMART_*` names. Use your process manager or `env` to set names containing hyphens. Connection settings belong in the proxy environment and use `RC_<ID>_*` with hyphens converted to underscores.
+
+## Verify provisioning
+
+Smart manages one Pod per server, with `restartPolicy: Never` and no mounted ServiceAccount token. Run the proxy where it can route to the Pod IP on TCP 25565, and allow that traffic in any NetworkPolicy. Supply any Service or external routing separately. Success means the API admitted the Pod and returned its name. Smart stores `namespace/name` for deletion. The namespace limit is 52 characters to fit this identifier in Smart's registry.
+
+Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the Pod label `smart-request` before provisioning again.
+
+Run `gradle test` in `rcm-smart-kubernetes` for the local integration suite. It uses real family metadata and needs no backend or credentials.

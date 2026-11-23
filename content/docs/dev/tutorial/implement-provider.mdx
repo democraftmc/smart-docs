@@ -1,0 +1,91 @@
+---
+title: 3. Implement the Provider
+description: Write the SmartProvider implementation.
+icon: Code
+---
+
+```java
+package group.aelysium.rustyconnector.modules.smart_mock;
+
+import group.aelysium.rustyconnector.modules.smart.ProviderConfig;
+import group.aelysium.rustyconnector.modules.smart.api.SmartMetadata;
+import group.aelysium.rustyconnector.modules.smart.api.SmartProvider;
+import group.aelysium.rustyconnector.proxy.family.Family;
+
+import java.util.Set;
+import java.util.UUID;
+
+public class MockProvider implements SmartProvider {
+    private final ProviderConfig config;
+
+    public MockProvider(ProviderConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public String id() {
+        return config.providerId;
+    }
+
+    @Override
+    public Set<String> includedFamilies() {
+        return Set.copyOf(config.includedFamilies);
+    }
+
+    @Override
+    public Set<String> excludedFamilies() {
+        return Set.copyOf(config.excludedFamilies);
+    }
+
+    @Override
+    public int maxProcesses() {
+        return config.maxProcesses;
+    }
+
+    @Override
+    public int priority() {
+        return config.priority;
+    }
+
+    @Override
+    public int runningProcesses() {
+        // Ask the Smart core — the smart_servers table is the source of truth,
+        // no local cache needed.
+        try {
+            return smart().servers().countByProvider(id());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public String provision(Family family) {
+        // Per-family, provider-specific settings come from the family metadata:
+        // smart.mock.* — see the metadata page of this tutorial.
+        var settings = SmartMetadata.providerData(family, id()).orElseThrow();
+        long memory = SmartMetadata.memory(family, 1024);
+
+        // ... your real provider would call its API here ...
+        String serverId = "mock-" + UUID.randomUUID();
+        System.out.println("[mock] provisioned " + serverId + " for family " + family.id()
+                + " with " + memory + " MB");
+        return serverId;
+    }
+
+    @Override
+    public void deprovision(String serverId) {
+        System.out.println("[mock] deprovisioned " + serverId);
+    }
+
+    private SmartModule smart() {
+        return (SmartModule) RC.Kernel().fetchModule("Smart").orElseThrow();
+    }
+}
+```
+
+`handlesFamily(familyId)` and `hasCapacity()` are already implemented as default methods from the fields above.
+
+
+## Shared API for real providers
+
+The mock implements `SmartProvider` directly so you can see what Smart calls during registration, provisioning, and deletion. When you add a backend, Smart's shared [workload API](/docs/dev/smart-api#workload-provider-api) provides helpers for metadata validation, HTTP requests, and cleanup. The mock runs without an HTTP backend.

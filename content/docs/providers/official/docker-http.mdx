@@ -1,10 +1,77 @@
 ---
-title: Docker HTTP
-description: Documentation for the Pterodactyl Provider
+title: Docker Engine
+description: Install and configure the Docker Engine provider for RustyConnector Smart.
 icon: Container
 ---
 
-import { Code, File } from 'lucide-react';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
+## Install
 
-## Installation
+With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-docker` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-docker-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
+
+## Register an instance
+
+Create `rustyconnector/smart/providers/docker-eu.yml`:
+
+```yaml
+providerId: docker-eu
+includedFamilies: [lobby]
+excludedFamilies: []
+maxProcesses: 5
+priority: 10
+```
+
+Replace `lobby` with your family ID. Smart chooses the highest-priority eligible instance with spare capacity. Use `RC_DOCKER_IDS` for a comma-separated list of instance IDs, or `RC_DOCKER_ID` for a single custom ID. The list takes precedence, and the default ID is `docker`. Give each instance its own file and use the same ID as its key under `metadata.smart`.
+
+## Connect to Docker Engine
+
+Uses [Engine HTTP API v1.45](https://docs.docker.com/reference/api/engine/version/v1.45/) for container create, start, and force removal. Set these proxy environment variables:
+
+```sh
+export RC_DOCKER_IDS=docker-eu
+export RC_DOCKER_EU_ENDPOINT=unix:///var/run/docker.sock
+```
+
+The proxy account needs permission to use the Engine socket. Install `curl` for Unix sockets or PEM-based TLS. For a [remote TLS daemon](https://docs.docker.com/engine/security/protect-access/), use an endpoint such as `https://engine.example.net:2376` and set `RC_DOCKER_EU_CA`, `RC_DOCKER_EU_CERT`, and `RC_DOCKER_EU_KEY` to the CA, client certificate, and private key paths. The Engine identity must be authorized to create, start, and remove containers.
+
+On the Engine host, run `docker pull itzg/minecraft-server:java21` and create the `minecraft` Docker network (for example with `docker network create minecraft`). Attach the proxy to that network or route from the proxy to the container IP and TCP 25565. The provider uses the Engine's default network if `network` is omitted.
+
+## Configure the family
+
+Add this to the selected family's YAML. Restart the proxy after setting its environment and provider configuration.
+
+```yaml
+metadata:
+  smart:
+    memory: 2048
+    cpu: 1
+    docker-eu:
+      image: itzg/minecraft-server:java21
+      cpu: 0.5
+      network: minecraft
+      env:
+        EULA: "TRUE"
+        TYPE: "PAPER"
+        VERSION: "1.21.4"
+```
+
+### Metadata reference
+
+Shared `smart.memory` defaults to 1024 whole MB (1 MB = 1,000,000 bytes) and `smart.cpu` defaults to 1 core. The keys below go under `smart.docker-eu`. Instance values override shared defaults, and Smart uses the shared RAM value for registry accounting.
+
+| Key | Meaning |
+| --- | --- |
+| `memory` | Optional override. Whole MB, with a minimum of 7 MB. Smart sends bytes. |
+| `cpu` | Optional override. Cores, with a minimum of 0.01. Smart sends nanoCPUs. |
+| `env` | Optional map of server environment variables. Quote values to preserve their spelling. |
+| `image` | Required image reference. The image must already exist on the Engine. |
+| `network` | Optional Engine network name or mode. Omit to use the Engine default. |
+
+Smart resolves environment overrides at each leaf before falling back to YAML. For example, `SMART_DOCKER-EU_ENV_EULA` overrides a declared workload variable, and `SMART_DOCKER-EU_CPU` sets the instance CPU override. Custom IDs retain hyphens in `SMART_*` names. Use your process manager or `env` to set names containing hyphens. Connection settings belong in the proxy environment and use `RC_<ID>_*` with hyphens converted to underscores.
+
+## Verify provisioning
+
+Success means the Engine started the container and returned its ID. Deletion also removes anonymous container volumes.
+
+Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the container name before provisioning again.
+
+Run `gradle test` in `rcm-smart-docker` for the local integration suite. A live test against Docker Engine 29.8.2 verified create, start, resource limits, environment, and repeat deletion through the Unix socket and a loopback mutual-TLS bridge.

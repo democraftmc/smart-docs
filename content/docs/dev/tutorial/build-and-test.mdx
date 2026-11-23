@@ -1,0 +1,31 @@
+---
+title: 6. Build and Test
+description: Compile, install, verify.
+icon: Rocket
+---
+
+## Build
+
+```bash
+cd rcm-smart-mock
+gradle shadowJar
+```
+
+The module jar is at `build/libs/rcm-smart-mock-0.1.0.jar`. Sanity check that nothing from core leaked in:
+
+```bash
+jar tf build/libs/rcm-smart-mock-0.1.0.jar | grep "group/aelysium/rustyconnector/RC.class"
+# must print nothing
+```
+
+## Install
+
+1. Drop `rcm-smart-0.1.0.jar` **and** `rcm-smart-mock-0.1.0.jar` into the proxy's `rc-modules` folder (plus a Haze driver such as `rcm-mysql`).
+2. Create `rustyconnector/smart/config.yml` (default `database: "default"`) and `rustyconnector/smart/providers/mock.yml`.
+3. Restart the proxy.
+
+## Verify
+
+- On startup, Smart logs `Smart core active with 1 provider(s).`
+- Connect a player to a family the mock provider serves with no free server — the `FamilyPostJoinEvent` hook calls `smart.provision(family)` and you should see `[mock] provisioned mock-... for family ...` in the logs.
+- The server appears in the `smart_servers` table (`smart.servers().serversByFamily("bedwars")`).

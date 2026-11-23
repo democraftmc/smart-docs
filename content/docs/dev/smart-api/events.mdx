@@ -1,5 +1,34 @@
 ---
 title: Events
-description: Create with Smart
+description: React to Smart-relevant proxy events from your module.
 icon: Lightbulb
 ---
+
+Native modules listen to RustyConnector events through the `EventManager` module:
+
+```java
+kernel.fetchModule("EventManager").onStart(e ->
+    ((EventManager) e).listen(new MyListener()));
+```
+
+with `@EventListener` methods:
+
+```java
+public class MyListener {
+    @EventListener(order = EventPriority.LOWEST)
+    public void handle(FamilyPostJoinEvent event) {
+        // event.family, event.server, event.player
+    }
+}
+```
+
+## Events useful for server orchestration
+
+| Event | Fired when |
+| --- | --- |
+| `NetworkPreJoinEvent` / `NetworkPostJoinEvent` / `NetworkLeaveEvent` | A player connects to / leaves the network |
+| `FamilyPreJoinEvent` / `FamilyPostJoinEvent` | A player joins a family (provision here if the family has no free server) |
+| `FamilyLeaveEvent` | A player leaves a family (deprovision empty servers here) |
+| `ServerRegisterEvent` / `ServerUnregisterEvent` / `ServerTimeoutEvent` | A server joins, leaves, or times out |
+
+Smart's own `OnFamilyPostJoin` listener uses `FamilyPostJoinEvent` to call `smart.provision(event.family)` when the family has no registered servers.
