@@ -4,7 +4,7 @@ description: Use the Smart core API from your own modules.
 icon: MessageCircleCode
 ---
 
-The Smart core module exports its API package (`group.aelysium.rustyconnector.modules.smart.api`) to other native modules via `sharedPackages`. Fetch the module at runtime:
+The Smart core module exports its API package (`fun.democraft.smart.api`) to other native modules via `sharedPackages`. Fetch the module at runtime:
 
 ```java
 RC.Kernel().fetchModule("Smart").ifPresent(m -> {
@@ -16,7 +16,7 @@ RC.Kernel().fetchModule("Smart").ifPresent(m -> {
 
 ## Workload provider API
 
-Smart exports `group.aelysium.rustyconnector.modules.smart.api.workloads` with the rest of its API. Declare Smart as a native module dependency and use its JAR as a Gradle `compileOnly` dependency.
+Smart exports `fun.democraft.smart.api.workloads` with the rest of its API. Declare Smart as a native module dependency and add `implementation("fun.democraft:smart:2.0.0")` in Gradle. Resolve it from the Funa releases repository at `https://java.funa.dev/releases` and exclude `fun.democraft:smart` from the provider’s Shadow JAR so RustyConnector supplies a single shared API at runtime.
 
 - Call `ProviderBuilder.start` and `ProviderBuilder.bind` from the corresponding hooks in your `ExternalModuleBuilder`. Smart is available during those hooks, after native module discovery. The helper loads one `ProviderConfig` per instance and registers the providers with Smart.
 - `Provider` implements Smart's family filters, priority, and registry-based capacity checks. Its lifecycle helpers report ambiguous creates and can clean up a workload after a later provisioning step fails.

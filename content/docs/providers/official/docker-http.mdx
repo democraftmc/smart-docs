@@ -6,7 +6,7 @@ icon: Container
 
 ## Install
 
-With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-docker` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-docker-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
+With Java 21 and Gradle, run `gradle shadowJar` in `rcs-docker`. Gradle resolves `fun.democraft:smart:2.0.0` from the Funa releases repository. Copy `build/libs/rcs-docker-0.1.0.jar` into the proxy's `rc-modules` alongside Smart 2.0.0 and the configured Haze driver.
 
 ## Register an instance
 
@@ -74,4 +74,4 @@ Success means the Engine started the container and returned its ID. Deletion als
 
 Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the container name before provisioning again.
 
-Run `gradle test` in `rcm-smart-docker` for the local integration suite. A live test against Docker Engine 29.8.2 verified create, start, resource limits, environment, and repeat deletion through the Unix socket and a loopback mutual-TLS bridge.
+Run `gradle test` in `rcs-docker` for the local integration suite. A live test against Docker Engine 29.8.2 verified create, start, resource limits, environment, and repeat deletion through the Unix socket and a loopback mutual-TLS bridge.

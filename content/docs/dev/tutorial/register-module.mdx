@@ -8,7 +8,7 @@ icon: Puzzle
 
 ```json
 {
-  "main": "group.aelysium.rustyconnector.modules.smart_mock.MockBuilder",
+  "main": "fun.democraft.smart.example.MockBuilder",
   "name": "Smart-Mock",
   "description": "Mock provider for Smart.",
   "dependencies": ["Smart"],
@@ -16,19 +16,19 @@ icon: Puzzle
 }
 ```
 
-`dependencies: ["Smart"]` guarantees the Smart core is loaded first. Smart's `sharedPackages` entry (`group.aelysium.rustyconnector.modules.smart.api`) makes the api classes visible to your classloader at runtime — declare them compile-only in Gradle, never shade them.
+`dependencies: ["Smart"]` guarantees the Smart core is loaded first. Smart's `sharedPackages` entry (`fun.democraft.smart.api`) makes the API classes visible to the provider at runtime. Declare Smart as an `implementation` dependency and exclude it from the Shadow JAR as shown in [the Gradle setup](../setup/).
 
 **`MockBuilder.java`**
 
 ```java
-package group.aelysium.rustyconnector.modules.smart_mock;
+package fun.democraft.smart.example;
 
 import group.aelysium.rustyconnector.RC;
 import group.aelysium.rustyconnector.common.errors.Error;
 import group.aelysium.rustyconnector.common.modules.ExternalModuleBuilder;
 import group.aelysium.rustyconnector.common.modules.Module;
-import group.aelysium.rustyconnector.modules.smart.ProviderConfig;
-import group.aelysium.rustyconnector.modules.smart.SmartModule;
+import fun.democraft.smart.ProviderConfig;
+import fun.democraft.smart.SmartModule;
 import group.aelysium.rustyconnector.proxy.ProxyKernel;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;

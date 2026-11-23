@@ -6,7 +6,7 @@ icon: AppWindow
 
 ## Install
 
-With Java 21 and Gradle, run `gradle shadowJar` in `rcm-smart-pterodactyl` with the `rcm-smart` checkout alongside it. Gradle builds Smart from that checkout, which includes the shared provider API. Copy `build/libs/rcm-smart-pterodactyl-0.1.0.jar` into the proxy's `rc-modules` alongside the rebuilt Smart 2.0.0 JAR and the configured Haze driver.
+With Java 21 and Gradle, run `gradle shadowJar` in `rcs-pterodactyl`. Gradle resolves `fun.democraft:smart:2.0.0` from the Funa releases repository. Copy `build/libs/rcs-pterodactyl-0.1.0.jar` into the proxy's `rc-modules` alongside Smart 2.0.0 and the configured Haze driver.
 
 ## Register an instance
 
@@ -87,4 +87,4 @@ The EULA settings in this example signal acceptance of the Minecraft EULA. Succe
 
 Smart records a successful request as `PROVISIONING`. Configure a RustyConnector-enabled server image or bootstrap to join the family and make its game address reachable from the proxy. Requests have a 30-second deadline. If creation times out or the response is lost, search for the logged reference in the Panel server name before provisioning again.
 
-Run `gradle test` in `rcm-smart-pterodactyl` for the local integration suite. It uses real family metadata and needs no backend or credentials.
+Run `gradle test` in `rcs-pterodactyl` for the local integration suite. It uses real family metadata and needs no backend or credentials.
